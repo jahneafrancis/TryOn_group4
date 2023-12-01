@@ -66,23 +66,23 @@
             </div>
         </div>
 
-        <!-- Feedback Section -->
-        <div class="col-lg-6">
-            <div class="box-element" id="feedback-form-wrapper">
-                <form id="feedback-form">
-                    <div class="form-field">
-                        <label for="feedback-text">Share your shopping experience:</label>
-                        <textarea id="feedback-text" name="feedbackText" rows="4" required></textarea>
-                    </div>
-                    <div class="form-field">
-                        <label for="feedback-rating">Rating:</label>
-                        <input type="number" id="feedback-rating" name="feedbackRating" min="1" max="5" required>
-                    </div>
-                    <button type="submit">Submit Feedback</button>
-                </form>
+<!-- Feedback Section -->
+<div class="col-lg-6">
+    <div class="feedback-form-wrapper" id="feedback-form-wrapper">
+        <form id="feedback-form" class="feedback-form">
+            <h2 class="form-title">Feedback</h2>
+            <div class="form-field">
+                <label for="feedback-text">Share your shopping experience:</label>
+                <textarea id="feedback-text" name="feedbackText" rows="4" class="textarea-field" required></textarea>
             </div>
-        </div>
+            <div class="form-field">
+                <label for="feedback-rating">Rating:</label>
+                <input type="number" id="feedback-rating" name="feedbackRating" class="input-field" min="1" max="5" required>
+            </div>
+            <button type="submit" class="submit-button">Submit Feedback</button>
+        </form>
     </div>
+</div>
 
     <script type="text/javascript">
         var shipping = '{{order.shipping}}';
