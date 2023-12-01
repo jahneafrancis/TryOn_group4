@@ -1,5 +1,5 @@
 body{
-	background-color: hsl(0, 0%, 98%);
+	background-color: hsl(0, 0%, 99%);
 }
 
 h1,h2,h3,h4,h5,h6{
@@ -13,20 +13,31 @@ h1,h2,h3,h4,h5,h6{
 	padding: 10px;
 }
 
-.thumbnail{
-	width: 100%;
-	height: 200px;
-	-webkit-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
-    -moz-box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
+.thumbnail {
+    width: 100%; /* Width is 100% of its container */
+    height: 350px; /* Increased fixed height */
+    overflow: hidden; /* Ensures the image doesn't overflow the container */
+    display: flex; /* Use flexbox to center the image */
+    align-items: center; /* Align vertically */
+    justify-content: center; /* Align horizontally */
     box-shadow: -1px -3px 5px -2px rgba(214,214,214,1);
 }
+
+.thumbnail img {
+    max-width: 100%; /* Max width is 100% of the container */
+    max-height: 300%; /* Max height to fit the container */
+    object-fit: contain; /* Ensures that the image's aspect ratio is preserved */
+}
+
+
+
 
 .product{
 	border-radius: 0 0 4px 4px;
 }
 
 .bg-dark{
-	background-color: #101bb7!important;
+	background-color: #50aed9!important;
 }
 
 #cart-icon{
