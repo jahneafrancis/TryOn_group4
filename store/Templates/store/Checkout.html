@@ -68,104 +68,150 @@
 
 <!-- Feedback Section -->
 <div class="col-lg-6">
-    <div class="feedback-form-wrapper" id="feedback-form-wrapper">
-        <form id="feedback-form" class="feedback-form">
-            <h2 class="form-title">Feedback</h2>
+    <div class="box-element" id="feedback-form-wrapper">
+        <form id="feedback-form">
             <div class="form-field">
                 <label for="feedback-text">Share your shopping experience:</label>
-                <textarea id="feedback-text" name="feedbackText" rows="4" class="textarea-field" required></textarea>
+                <textarea id="feedback-text" name="feedbackText" rows="4" required></textarea>
             </div>
             <div class="form-field">
                 <label for="feedback-rating">Rating:</label>
-                <input type="number" id="feedback-rating" name="feedbackRating" class="input-field" min="1" max="5" required>
+                <input type="number" id="feedback-rating" name="feedbackRating" min="1" max="5" required>
             </div>
-            <button type="submit" class="submit-button">Submit Feedback</button>
+            <button type="button" onclick="submitFeedback()">Submit Feedback</button>
         </form>
+
+        <div class="reviews-container" id="reviewsContainer">
+            <h2>Reviews</h2>
+            <ul id="reviewsList"></ul>
+        </div>
     </div>
 </div>
 
-    <script type="text/javascript">
-        var shipping = '{{order.shipping}}';
-        var total = '{{order.get_cart_total|floatformat:2}}';
+<script type="text/javascript">
+    var shipping = '{{order.shipping}}';
+    var total = '{{order.get_cart_total|floatformat:2}}';
+    var initialReviews = [];
 
-        if (shipping == 'False'){
-            document.getElementById('shipping-info').innerHTML = '';
+    if (shipping == 'False') {
+        document.getElementById('shipping-info').innerHTML = '';
+    }
+
+    if (user != 'AnonymousUser') {
+        document.getElementById('user-info').innerHTML = '';
+    }
+
+    if (shipping == 'False' && user != 'AnonymousUser') {
+        // Hide entire form if the user is logged in and shipping is false
+        document.getElementById('form-wrapper').classList.add("hidden");
+        // Show payment if a logged-in user wants to buy an item that does not require shipping
+        document.getElementById('payment-info').classList.remove("hidden");
+    }
+
+    var form = document.getElementById('form');
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Form Submitted...');
+        document.getElementById('form-button').classList.add("hidden");
+        document.getElementById('payment-info').classList.remove("hidden");
+    });
+
+    document.getElementById('make-payment').addEventListener('click', function (e) {
+        submitFormData();
+    });
+
+    function submitFormData() {
+        console.log('Payment button clicked');
+
+        var userFormData = {
+            'name': null,
+            'email': null,
+            'total': total,
+        };
+
+        var shippingInfo = {
+            'address': null,
+            'city': null,
+            'state': null,
+            'zipcode': null,
+        };
+
+        if (shipping != 'False') {
+            shippingInfo.address = form.address.value;
+            shippingInfo.city = form.city.value;
+            shippingInfo.state = form.state.value;
+            shippingInfo.zipcode = form.zipcode.value;
         }
 
-        if (user != 'AnonymousUser'){
-            document.getElementById('user-info').innerHTML = '';
+        if (user == 'AnonymousUser') {
+            userFormData.name = form.name.value;
+            userFormData.email = form.email.value;
         }
 
-        if (shipping == 'False' && user != 'AnonymousUser'){
-            //Hide entire form if the user is logged in and shipping is false
-            document.getElementById('form-wrapper').classList.add("hidden");
-            //Show payment if a logged-in user wants to buy an item that does not require shipping
-            document.getElementById('payment-info').classList.remove("hidden");
-        }
+        console.log('Shipping Info:', shippingInfo);
+        console.log('User Info:', userFormData);
 
-        var form = document.getElementById('form');
-        form.addEventListener('submit', function(e){
-            e.preventDefault();
-            console.log('Form Submitted...');
-            document.getElementById('form-button').classList.add("hidden");
-            document.getElementById('payment-info').classList.remove("hidden");
+        var url = "/process_order/";
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({ 'form': userFormData, 'shipping': shippingInfo }),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log('Success:', data);
+            alert('Transaction completed');
+
+            // Assuming data.reviews is an array of new reviews
+            const newReviews = data.reviews || [];
+            initialReviews = initialReviews.concat(newReviews);
+
+            // Display the updated reviews
+            displayReviews(initialReviews);
+
+            cart = {};
+            document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/";
+
+            window.location.href = "{% url 'store' %}";
         });
+    }
 
-        document.getElementById('make-payment').addEventListener('click', function(e){
-            submitFormData();
+    function submitFeedback() {
+        const feedbackText = document.getElementById("feedback-text").value;
+        const feedbackRating = document.getElementById("feedback-rating").value;
+
+        // Assuming you have an API endpoint for submitting feedback
+        // In a real-world scenario, this would involve an AJAX request to the server
+        // Here, we'll just add the feedback to the initial reviews for simplicity
+        initialReviews.push({ text: feedbackText, rating: feedbackRating });
+
+        // Display the updated reviews
+        displayReviews(initialReviews);
+
+        // Clear the input fields
+        document.getElementById("feedback-text").value = "";
+        document.getElementById("feedback-rating").value = "";
+    }
+
+    function displayReviews(reviews) {
+        const reviewsList = document.getElementById("reviewsList");
+        reviewsList.innerHTML = ""; // Clear previous reviews
+
+        // Populate the reviews list
+        reviews.forEach(review => {
+            const li = document.createElement("li");
+            li.textContent = `Review: ${review.text}, Rating: ${review.rating} `;
+            reviewsList.appendChild(li);
         });
+    }
 
-        function submitFormData(){
-            console.log('Payment button clicked');
-
-            var userFormData = {
-                'name': null,
-                'email': null,
-                'total': total,
-            };
-
-            var shippingInfo = {
-                'address': null,
-                'city': null,
-                'state': null,
-                'zipcode': null,
-            };
-
-            if (shipping != 'False'){
-                shippingInfo.address = form.address.value;
-                shippingInfo.city = form.city.value;
-                shippingInfo.state = form.state.value;
-                shippingInfo.zipcode = form.zipcode.value;
-            }
-
-            if (user == 'AnonymousUser'){
-                userFormData.name = form.name.value;
-                userFormData.email = form.email.value;
-            }
-
-            console.log('Shipping Info:', shippingInfo);
-            console.log('User Info:', userFormData);
-
-            var url = "/process_order/";
-            fetch(url, {
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json',
-                    'X-CSRFToken': csrftoken,
-                }, 
-                body: JSON.stringify({'form': userFormData, 'shipping': shippingInfo}),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log('Success:', data);
-                alert('Transaction completed');  
-
-                cart = {};
-                document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/";
-
-                window.location.href = "{% url 'store' %}";
-            });
-        }
-    </script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Display initial reviews
+        displayReviews(initialReviews);
+    });
+</script>
 
 {% endblock content %}
